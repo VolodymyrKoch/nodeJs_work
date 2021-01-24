@@ -1,0 +1,25 @@
+{
+  "name": "Node.js_work",
+  "version": "1.0.0",
+  "description": "налаштування файлу nodemon.json",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VolodymyrKoch/Node.js_work.git"
+  },
+  "keywords": [],
+  "author": "Volodymyr <volodymyrkocherhan@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/VolodymyrKoch/Node.js_work/issues"
+  },
+  "homepage": "https://github.com/VolodymyrKoch/Node.js_work#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  }
+}
