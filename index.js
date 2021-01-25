@@ -2,12 +2,6 @@
 const contacts = require('./contacts.js');
 const argv = require('yargs').argv;
 
-// const message = 'node is cool  ';
-// console.log(message);
-
-// console.log(contacts.listContacts());
-// console.log(contacts.getContactById());
-
 // TODO: рефакторить
 function invokeAction({ action, id, name, email, phone }) {
   switch (action) {
