@@ -1,10 +1,6 @@
-// const path = require('path');
-// const fs = require('fs');
-const contacts = require('./contacts.js');
+const express = require('express');
+const morgan = require('morgan');
+var cors = require('cors');
+const userRouter = require('./routes/user.routes');
 
-const message = 'node is cool ';
-console.log(message);
-
-
-
-// console.log(listContacts());
+const PORT = process.env.port || 8080;
