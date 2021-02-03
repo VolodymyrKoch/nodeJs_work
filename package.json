@@ -1,5 +1,5 @@
 {
-  "name": "Node.js_work",
+  "name": "nodeJsWork",
   "version": "1.0.0",
   "description": "налаштування файлу nodemon.json",
   "main": "index.js",
@@ -24,6 +24,11 @@
   },
   "dependencies": {
     "uuid": "^8.3.2",
-    "yargs": "^16.2.0"
+    "yargs": "^16.2.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "joi": "^17.3.0",
+    "morgan": "^1.10.0"
+
   }
 }
