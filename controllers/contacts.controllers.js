@@ -4,10 +4,7 @@ const Joi = require('joi');
 const fs = require('fs').promises;
 const path = require('path');
 
-const contactsPath = path.normalize('../models/contacts.json');
-// const contactsPath = path.join(__dirname, '../models/Contacts.json');
-// console.log('contactsPath', contactsPath);
-// console.log(JSON.parse(contactsPath));
+const contactsPath = path.join(__dirname, '../models/Contacts.json');
 
 class ContactsController {
   listContacts(req, res) {
@@ -20,13 +17,12 @@ class ContactsController {
     return contacts.findIndex(({ id }) => id === numberId);
   };
 
-  getContactsId = (req, res) => {
+  getById = (req, res) => {
     const {
       params: { contactId },
     } = req;
-    const numberId = +contactId;
-    console.log(contactId);
     const findContact = this.findContactIndex(contactId);
+
     res.json(contacts[findContact]);
     res.status(200);
   };
@@ -39,11 +35,9 @@ class ContactsController {
       ...body,
     };
     contacts.push(createContact);
-    console.log('contacts', contacts);
     fs.writeFile(contactsPath, JSON.stringify(contacts));
     res.json(createContact);
     res.status(201);
-    // res.status(201).send(createContact);
   }
 
   validateRequiredAdd(req, res, next) {
@@ -59,29 +53,27 @@ class ContactsController {
     next();
   }
 
-  deleteContactsId(req, res) {
-    res.json(contacts);
+  removeContact = (req, res) => {
+    const { contactId } = req.params;
+    const сontactIndex = this.findContactIndex(contactId);
+    const deleteContact = contacts.splice(сontactIndex, 1);
+    fs.writeFile(contactsPath, JSON.stringify(contacts));
+    console.log('deleteContact', deleteContact);
+
+    res.json({ message: 'Contact deleted' });
     res.status(200);
-  }
+  };
 
   updateContact = (req, res) => {
     const { contactId } = req.params;
-
-    console.log('params', req.params);
-    console.log('contactId', contactId);
-
     const сontactIndex = this.findContactIndex(contactId);
-    // const numberId = +contactId;
-    // const сontactIndex = contacts.findIndex(({ id }) => id === numberId);
-
     const updateDContact = {
       ...contacts[сontactIndex],
       ...req.body,
     };
     contacts[сontactIndex] = updateDContact;
     fs.writeFile(contactsPath, JSON.stringify(contacts));
-    console.log('contacts', contacts);
-    console.log('сontactIndex', сontactIndex);
+
     res.json(updateDContact);
     res.status(200);
   };
@@ -93,12 +85,8 @@ class ContactsController {
     const numberId = +contactId;
     const сontactIndex = contacts.findIndex(({ id }) => id === numberId);
     if (сontactIndex === -1) {
-      return res.status(400).send('User is not found');
+      return res.status(404).send('Not found');
     }
-    // const contactById = contacts.find(contact => contact.id === contactId);
-    // if (!contactById) {
-    //   return res.status(404).send({ message: 'User is not found' });
-    // }
     next();
   }
 

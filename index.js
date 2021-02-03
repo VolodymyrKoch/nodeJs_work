@@ -16,13 +16,10 @@ class Server {
     this.listen();
   }
 
-  // initServer() {}
-
   initMiddlewares() {
     this.server.use(express.json());
     this.server.use(cors({ origin: '*' }));
     this.server.use(morgan('combined'));
-    //
   }
 
   initRoutes() {
