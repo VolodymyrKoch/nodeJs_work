@@ -95,7 +95,7 @@ class ContactsController {
       name: Joi.string(),
       email: Joi.string(),
       phone: Joi.string(),
-    });
+    }).min(1);
 
     const validationResult = validationRules.validate(req.body);
 
