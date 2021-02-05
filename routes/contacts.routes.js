@@ -7,23 +7,18 @@ const router = Router();
 router.get('/', ContactsController.listContacts);
 router.get(
   '/:contactId',
-  ContactsController.validateContactId,
+  ContactsController.validateId,
   ContactsController.getById,
 );
-router.post(
-  '/',
-  ContactsController.validateRequiredAdd,
-  ContactsController.addContact,
-);
+router.post('/', ContactsController.addContact);
 router.delete(
   '/:contactId',
-  ContactsController.validateContactId,
+  ContactsController.validateId,
   ContactsController.removeContact,
 );
 router.patch(
   '/:contactId',
-  ContactsController.validateContactId,
-  ContactsController.validateUpdateContact,
+  ContactsController.validateId,
   ContactsController.updateContact,
 );
 
