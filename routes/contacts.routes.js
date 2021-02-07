@@ -20,6 +20,7 @@ router.patch(
   '/:contactId',
   ContactsController.validateId,
   ContactsController.updateContact,
+  ContactsController.validateUpdateContact,
 );
 
 module.exports = router;

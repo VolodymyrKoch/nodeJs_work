@@ -1,13 +1,8 @@
-// const contacts = require('../models/contacts.json');
-// const { v4: uuid } = require('uuid');
 const Joi = require('joi');
-// const fs = require('fs').promises;
-// const path = require('path');
-//? -----
+
 const {
   Types: { ObjectId },
 } = require('mongoose');
-//? -----
 
 const Contact = require('../models/modelsContacts.js');
 
@@ -20,20 +15,15 @@ class ContactsController {
     res.status(200);
   }
 
-  // findContactIndex = contactId => {
-  //   const numberId = +contactId;
-  //   return contacts.findIndex(({ id }) => id === numberId);
-  // };
-
   async getById(req, res) {
     const {
       params: { contactId },
     } = req;
     const findContact = await Contact.findById(contactId);
-    if (!contact) {
-      return res.json("User isn't found"), res.status(400);
+    if (!findContact) {
+      return res.json("Contact isn't found"), res.status(400);
     }
-    res.json(contact);
+    res.json(findContact);
     res.status(200);
   }
 
@@ -44,30 +34,15 @@ class ContactsController {
       res.json(createContact);
       res.status(200);
     } catch (error) {
-      res.json(error.message);
-      res.status(400);
+      res.status(400).send(error.message);
     }
   }
-
-  // validateRequiredAdd(req, res, next) {
-  //   const validationRules = Joi.object({
-  //     name: Joi.string().required(),
-  //     email: Joi.string().required(),
-  //     phone: Joi.string().required(),
-  //   });
-  //   const validationResult = validationRules.validate(req.body);
-  //   if (validationResult.error) {
-  //     return res.status(400).send({ message: 'missing required name field' });
-  //   }
-  //   next();
-  // }
 
   async removeContact(req, res) {
     const { contactId } = req.params;
     const deleteContact = await Contact.findByIdAndDelete(contactId);
-    // console.log('deleteContact', deleteContact);
     if (!deleteContact) {
-      return res.json("User isn't found"), res.status(400);
+      return res.json("Contact isn't found"), res.status(400);
     }
     res.json(deleteContact);
     res.status(200);
@@ -82,7 +57,7 @@ class ContactsController {
     );
 
     if (!updateDContact) {
-      return res.json("User isn't found"), res.status(400);
+      return res.json("Contact isn't found"), res.status(400);
     }
     res.json(updateDContact);
     res.status(200);
@@ -93,38 +68,28 @@ class ContactsController {
       params: { contactId },
     } = req;
     if (!ObjectId.isValid(contactId)) {
-      return res.status(404).send('id is Not found');
+      return res.status(404).send('Your id is not valid');
     }
     next();
   }
 
-  // validateContactId(req, res, next) {
-  //   const {
-  //     params: { contactId },
-  //   } = req;
-  //   const numberId = +contactId;
-  //   const сontactIndex = contacts.findIndex(({ id }) => id === numberId);
-  //   if (сontactIndex === -1) {
-  //     return res.status(404).send('Not found');
-  //   }
-  //   next();
-  // }
+  validateUpdateContact(req, res, next) {
+    const validationRules = Joi.object({
+      name: Joi.string(),
+      email: Joi.string(),
+      phone: Joi.string(),
+      subscription: Joi.string(),
+      password: Joi.string(),
+    }).min(1);
 
-  // validateUpdateContact(req, res, next) {
-  //   const validationRules = Joi.object({
-  //     name: Joi.string(),
-  //     email: Joi.string(),
-  //     phone: Joi.string(),
-  //   }).min(1);
+    const validationResult = validationRules.validate(req.body);
 
-  //   const validationResult = validationRules.validate(req.body);
+    if (validationResult.error) {
+      return res.status(400).send({ message: 'missing required name field' });
+    }
 
-  //   if (validationResult.error) {
-  //     return res.status(400).send({ message: 'missing required name field' });
-  //   }
-
-  //   next();
-  // }
+    next();
+  }
 }
 
 module.exports = new ContactsController();

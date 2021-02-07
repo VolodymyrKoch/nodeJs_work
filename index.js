@@ -2,15 +2,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 var cors = require('cors');
-// const { MongoClient } = require('mongodb'); //-
-
-const morgan = require('morgan'); //-
+const morgan = require('morgan');
 const contactsRouter = require('./routes/contacts.routes');
 
 dotenv.config();
-const MONGO_URI = `mongodb+srv://admin:${DB_PASSWORD}@cluster0.ziu0b.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`;
-// const MONGO_URI = process.env.DB_CLOUD;
-// const MONGO_URI = DB_CLOUD;
+
+const MONGO_URI = process.env.DB_CLOUD;
 
 const PORT = process.env.port || 8080;
 
@@ -35,7 +32,7 @@ class Server {
   initRoutes() {
     this.server.use('/contacts', contactsRouter);
   }
-  //? -------
+
   async connectToDb() {
     try {
       if (
@@ -48,18 +45,10 @@ class Server {
         console.log('Database connection successful');
       }
     } catch (error) {
+      console.log(err.message);
       process.exit(1);
     }
   }
-  //* -------
-  // connectToDb() {
-  //   mongoose.connect(process.env.MONGO_URI, {
-  //     useNewUrlParser: true,
-  //     useUnifiedTopology: true,
-  //   });
-  // }
-
-  //? -------
 
   listen() {
     this.server.listen(PORT, () => {
