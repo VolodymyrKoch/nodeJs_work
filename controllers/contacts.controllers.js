@@ -90,6 +90,20 @@ class ContactsController {
 
     next();
   }
+  validateRequiredAdd(req, res, next) {
+    const validationRules = Joi.object({
+      name: Joi.string().required(),
+      email: Joi.string().required(),
+      phone: Joi.string().required(),
+      subscription: Joi.string().required(),
+      password: Joi.string().required(),
+    });
+    const validationResult = validationRules.validate(req.body);
+    if (validationResult.error) {
+      return res.status(400).send({ message: 'missing required name field' });
+    }
+    next();
+  }
 }
 
 module.exports = new ContactsController();
