@@ -10,7 +10,11 @@ router.get(
   ContactsController.validateId,
   ContactsController.getById,
 );
-router.post('/', ContactsController.addContact);
+router.post(
+  '/',
+  ContactsController.validateRequiredAdd,
+  ContactsController.addContact,
+);
 router.delete(
   '/:contactId',
   ContactsController.validateId,
