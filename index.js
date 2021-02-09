@@ -1,7 +1,13 @@
 const express = require('express');
-const morgan = require('morgan');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
 var cors = require('cors');
+const morgan = require('morgan');
 const contactsRouter = require('./routes/contacts.routes');
+
+dotenv.config();
+
+const MONGO_URI = process.env.DB_CLOUD;
 
 const PORT = process.env.port || 8080;
 
@@ -14,6 +20,7 @@ class Server {
     this.initMiddlewares();
     this.initRoutes();
     this.listen();
+    this.connectToDb();
   }
 
   initMiddlewares() {
@@ -24,6 +31,23 @@ class Server {
 
   initRoutes() {
     this.server.use('/contacts', contactsRouter);
+  }
+
+  async connectToDb() {
+    try {
+      if (
+        await mongoose.connect(MONGO_URI, {
+          useNewUrlParser: true,
+          useUnifiedTopology: true,
+          useCreateIndex: true,
+        })
+      ) {
+        console.log('Database connection successful');
+      }
+    } catch (error) {
+      console.log(err.message);
+      process.exit(1);
+    }
   }
 
   listen() {
