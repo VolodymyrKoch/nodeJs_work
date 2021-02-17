@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const bcrypt = require('require');
 var cors = require('cors');
 const morgan = require('morgan');
 const contactsRouter = require('./routes/contacts.routes');
