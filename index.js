@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 var cors = require('cors');
 const morgan = require('morgan');
 const contactsRouter = require('./routes/contacts.routes');
+const userRouter = require('./routes/users.routes'); //
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ class Server {
 
   initRoutes() {
     this.server.use('/contacts', contactsRouter);
+    this.server.use('', userRouter); //
   }
 
   async connectToDb() {
