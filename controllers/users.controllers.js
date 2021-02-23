@@ -3,25 +3,38 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
+const multer = require('multer');
+const path = require('path');
+const Avatar = require('avatar-builder');
+const fs = require('fs').promises;
 
 const User = require('../models/modelsUsers.js');
+
 dotenv.config();
 mongoose.set('useFindAndModify', false);
+
 class UserController {
   async registerNewUser(req, res) {
+    const { body } = req;
     try {
-      const { body } = req;
+      const avatar = Avatar.catBuilder(128); //(генерація аватарки 1з 128)
+      avatar.create().then(buffer => fs.writeFile('tmp/avatar.png', buffer)); // записуєм аватар в  tmp
+      const newAvatar = Date.now();
+      fs.rename('tmp/avatar.png', `public/images/${newAvatar}.png`); // метод переіменування старого файлу tmp/avatar.png на newAvatar і нова його адреса public/images/
       const hashedPassword = await bcrypt.hash(body.password, 14);
+      const newAvtarUrl = `http://localhost:8080/images/${newAvatar}.png`; // записую url для кожного юзера
       const createUser = await User.create({
         ...body,
         password: hashedPassword,
         token: '',
+        avatarURL: newAvtarUrl,
       });
       const { email, subscription } = createUser;
       res.status(201).json({
         user: { email: email, subscription: subscription },
       });
     } catch (error) {
+      console.log(error);
       res.status(409).send('Email in use');
     }
   }
@@ -87,11 +100,27 @@ class UserController {
     return res.status(204).send('No Content');
   }
 
-
   async getCurrentUser(req, res) {
     const { email, subscription } = req.user;
     return res.status(200).json({ email: email, subscription: subscription });
   }
+  // ------
+  storage = multer.diskStorage({
+    // обєкт storage служить для обробки файлу(назва і розширення), прокидуєм його в uploads
+    destination: function (req, file, cb) {
+      // ф-ція обробки файлу і папки зберігання цього файлу
+      cb(null, 'public/images');
+    },
+    filename: function (req, file, cb) {
+      const fileInfo = path.parse(file.originalname); // розпарсили файл назву
+      console.log('fileInfo', fileInfo);
+      // console.log('file', file);
+      cb(null, `FOtos${Date.now()}${fileInfo.ext}`); // формуєм назву файлу "FOtos"+ до назви файлу даєм час по формату 1970р.+розширення файлу
+    },
+  });
+  upload = multer({ storage: this.storage });
+
+  //
 }
 
 module.exports = new UserController();
