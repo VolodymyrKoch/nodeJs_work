@@ -9,6 +9,7 @@ const Avatar = require('avatar-builder');
 const fs = require('fs').promises;
 
 const User = require('../models/modelsUsers.js');
+const { existsSync } = require('fs');
 
 dotenv.config();
 mongoose.set('useFindAndModify', false);
@@ -120,6 +121,90 @@ class UserController {
   });
   upload = multer({ storage: this.storage });
 
+  validateUpdateUser(req, res, next) {
+    console.log('validateUpdateUser started');
+
+    const validRules = Joi.object({
+      subscription: Joi.string().valid('free', 'pro', 'premium'),
+      email: Joi.string().email({
+        minDomainSegments: 2,
+        tlds: { allow: ['com', 'net'] },
+        password: Joi.string(),
+      }),
+    });
+    const validationResult = validRules.validate(req.body);
+    if (validationResult.error) {
+      return res.status(400).send(validationResult.error.message);
+    }
+    next();
+  }
+
+  async updateUserAvatar(req, res) {
+    console.log('validateUpdateUser started');
+
+    const deleteUrl = req.user.avatarURL.replace(
+      'http://localhost:8080/images/',
+      '',
+    );
+
+    switch (true) {
+      case req.body.password && req.file:
+        const hashedPassword = await bcrypt.hash(req.body.password, 14);
+        if (existsSync(`public/images/${deleteUrl}`)) {
+          fs.unlink(path.join('public/images', deleteUrl));
+        }
+        const updatedPassword = await User.findByIdAndUpdate(
+          req.user._id,
+          {
+            ...req.body,
+            password: hashedPassword,
+            avatarURL: `http://localhost:8080/images/${req.file.filename}`,
+          },
+          { new: true },
+        );
+        return res.status(200).json({
+          avatarURL: `http://localhost:8080/images/${req.file.filename}`,
+        });
+
+      case req.body.password:
+        // const hashedPassword = await bcrypt.hash(req.body.password, 14);
+        await User.findByIdAndUpdate(
+          req.user._id,
+          {
+            ...req.body,
+            password: hashedPassword,
+          },
+          { new: true },
+        );
+        return res.status(200).send('Data updated');
+
+      case req.file:
+        if (existsSync(`public/images/${deleteUrl}`)) {
+          fs.unlink(path.join('public/images', deleteUrl));
+        }
+        await User.findByIdAndUpdate(
+          req.user._id,
+          {
+            ...req.body,
+            avatarURL: `http://localhost:8080/images/${req.file.filename}`,
+          },
+          { new: true },
+        );
+        return res.status(200).json({
+          avatarURL: `http://localhost:8080/images/${req.file.filename}`,
+        });
+
+      default:
+        await User.findByIdAndUpdate(
+          req.user._id,
+          { ...req.body },
+          { new: true },
+        );
+        return res.status(200).send('Data updated');
+    }
+  }
+
+  // async updateSubscription(req, res) {}
   //
 }
 
