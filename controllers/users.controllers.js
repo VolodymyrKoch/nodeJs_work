@@ -10,11 +10,17 @@ const fs = require('fs').promises;
 
 const User = require('../models/modelsUsers.js');
 const { existsSync } = require('fs');
+const { string } = require('joi');
 
 dotenv.config();
 mongoose.set('useFindAndModify', false);
 
+// як заюзати const PORT = process.env.port || 8080; з index.js в newAvtarUrl в deleteUrl в avatarURL  PORT=8080
+// const newAvtarUrl = `http://localhost:${process.env.PORT}/images/${newAvatar}.png`;
+
 class UserController {
+  PORT = process.env.port || 8080;
+
   async registerNewUser(req, res) {
     const { body } = req;
     try {
@@ -23,7 +29,11 @@ class UserController {
       const newAvatar = Date.now();
       fs.rename('tmp/avatar.png', `public/images/${newAvatar}.png`); // метод переіменування старого файлу tmp/avatar.png на newAvatar і нова його адреса public/images/
       const hashedPassword = await bcrypt.hash(body.password, 14);
-      const newAvtarUrl = `http://localhost:8080/images/${newAvatar}.png`; // записую url для кожного юзера
+
+      const newAvtarUrl = `http://localhost:${PORT}/images/${newAvatar}.png`;
+      // const newAvtarUrl = `http://localhost:${process.env.PORT || 8080}/images/${newAvatar}.png`;
+      // const newAvtarUrl = `http://localhost:8080/images/${newAvatar}.png`; // записую url для кожного юзера
+
       const createUser = await User.create({
         ...body,
         password: hashedPassword,
@@ -139,11 +149,12 @@ class UserController {
     next();
   }
 
-  async updateUserAvatar(req, res) {
+  async updateUserAvatar(req, res, PORT) {
     console.log('updateUserAvatar started');
 
+    //! const deleteUrl = req.user.avatarURL.replace('http://localhost:8080/images/', '',);
     const deleteUrl = req.user.avatarURL.replace(
-      'http://localhost:8080/images/',
+      `http://localhost:${PORT}/images/`,
       '',
     );
     console.log(req.body);
@@ -158,12 +169,14 @@ class UserController {
           {
             ...req.body,
             password: hashedPassword,
-            avatarURL: `http://localhost:8080/images/${req.file.filename}`,
+            avatarURL: `http://localhost:${PORT}/images/${req.file.filename}`,
+            // avatarURL: `http://localhost:8080/images/${req.file.filename}`,
           },
           { new: true },
         );
         return res.status(200).json({
-          avatarURL: `http://localhost:8080/images/${req.file.filename}`,
+          avatarURL: `http://localhost:${PORT}/images/${req.file.filename}`,
+          // avatarURL: `http://localhost:8080/images/${req.file.filename}`,
         });
 
       case !!req.body.password:
@@ -186,12 +199,14 @@ class UserController {
           req.user._id,
           {
             ...req.body,
-            avatarURL: `http://localhost:8080/images/${req.file.filename}`,
+            avatarURL: `http://localhost:${PORT}/images/${req.file.filename}`,
+            // avatarURL: `http://localhost:8080/images/${req.file.filename}`,
           },
           { new: true },
         );
         return res.status(200).json({
-          avatarURL: `http://localhost:8080/images/${req.file.filename}`,
+          avatarURL: `http://localhost:${PORT}/images/${req.file.filename}`,
+          // avatarURL: `http://localhost:8080/images/${req.file.filename}`,
         });
 
       default:
@@ -203,8 +218,6 @@ class UserController {
         return res.status(200).send('Data updated');
     }
   }
-
-
 }
 
 module.exports = new UserController();
