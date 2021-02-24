@@ -129,8 +129,8 @@ class UserController {
       email: Joi.string().email({
         minDomainSegments: 2,
         tlds: { allow: ['com', 'net'] },
-        password: Joi.string(),
       }),
+      password: Joi.string(),
     });
     const validationResult = validRules.validate(req.body);
     if (validationResult.error) {
@@ -140,15 +140,15 @@ class UserController {
   }
 
   async updateUserAvatar(req, res) {
-    console.log('validateUpdateUser started');
+    console.log('updateUserAvatar started');
 
     const deleteUrl = req.user.avatarURL.replace(
       'http://localhost:8080/images/',
       '',
     );
-
+    console.log(req.body);
     switch (true) {
-      case req.body.password && req.file:
+      case !!req.body.password && !!req.file:
         const hashedPassword = await bcrypt.hash(req.body.password, 14);
         if (existsSync(`public/images/${deleteUrl}`)) {
           fs.unlink(path.join('public/images', deleteUrl));
@@ -166,19 +166,19 @@ class UserController {
           avatarURL: `http://localhost:8080/images/${req.file.filename}`,
         });
 
-      case req.body.password:
-        // const hashedPassword = await bcrypt.hash(req.body.password, 14);
+      case !!req.body.password:
+        const hashedOnlyPassword = await bcrypt.hash(req.body.password, 14);
         await User.findByIdAndUpdate(
           req.user._id,
           {
             ...req.body,
-            password: hashedPassword,
+            password: hashedOnlyPassword,
           },
           { new: true },
         );
-        return res.status(200).send('Data updated');
+        return res.status(200).send('Data password updated');
 
-      case req.file:
+      case !!req.file:
         if (existsSync(`public/images/${deleteUrl}`)) {
           fs.unlink(path.join('public/images', deleteUrl));
         }
