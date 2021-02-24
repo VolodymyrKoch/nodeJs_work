@@ -26,7 +26,4 @@ router.patch(
   UserController.updateUserAvatar,
 ),
   (module.exports = router);
-// joi валідаці
-// patch новий роут +authorize
-// функція перевірки паролю,  картинки і всього разом на картинку+пароль і якшо нічого нема
-//
+

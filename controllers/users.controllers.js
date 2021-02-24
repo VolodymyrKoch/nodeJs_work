@@ -105,7 +105,7 @@ class UserController {
     const { email, subscription } = req.user;
     return res.status(200).json({ email: email, subscription: subscription });
   }
-  // ------
+  //* ------
   storage = multer.diskStorage({
     // обєкт storage служить для обробки файлу(назва і розширення), прокидуєм його в uploads
     destination: function (req, file, cb) {
@@ -204,8 +204,7 @@ class UserController {
     }
   }
 
-  // async updateSubscription(req, res) {}
-  //
+
 }
 
 module.exports = new UserController();
