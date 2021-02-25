@@ -16,6 +16,7 @@ const UserSchema = new Schema({
   },
 
   token: String,
+  verificationToken: String,
 });
 //створиться mongo колекція як users
 const User = mongoose.model('User', UserSchema);
