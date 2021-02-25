@@ -8,6 +8,7 @@ router.post(
   '/auth/register',
   UserController.validateUser,
   UserController.registerNewUser,
+  UserController.mailingСheck,
 );
 router.post('/auth/login', UserController.validateUser, UserController.login);
 router.get('/auth', authorize, UserController.authUser);
@@ -26,4 +27,7 @@ router.patch(
   UserController.updateUserAvatar,
 ),
   (module.exports = router);
-
+router.get(
+  '/auth/verify/:verificationToken',
+  UserController.userVerificationToken,
+);
