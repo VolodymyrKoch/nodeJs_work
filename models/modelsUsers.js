@@ -17,6 +17,13 @@ const UserSchema = new Schema({
 
   token: String,
   verificationToken: String,
+
+  avatarURL: String,
+  subscription: {
+    type: String,
+    enum: ['free', 'pro', 'premium'],
+    default: 'free',
+  },
 });
 //створиться mongo колекція як users
 const User = mongoose.model('User', UserSchema);
