@@ -7,13 +7,16 @@ const multer = require('multer');
 const path = require('path');
 const Avatar = require('avatar-builder');
 const fs = require('fs').promises;
+const sgMail = require('@sendgrid/mail');
 
 const User = require('../models/modelsUsers.js');
 const { existsSync } = require('fs');
-const { string } = require('joi');
+// const { string } = require('joi');
+const { v4: uuidv4 } = require('uuid');
 
 dotenv.config();
 mongoose.set('useFindAndModify', false);
+sgMail.setApiKey(process.env.EMAIL_TOKEN);
 
 // як заюзати const PORT = process.env.port || 8080; з index.js в newAvtarUrl в deleteUrl в avatarURL  PORT=8080
 // const newAvtarUrl = `http://localhost:${process.env.PORT}/images/${newAvatar}.png`;
@@ -21,31 +24,39 @@ mongoose.set('useFindAndModify', false);
 class UserController {
   PORT = process.env.port || 8080;
 
-  async registerNewUser(req, res) {
+  async registerNewUser(req, res, next) {
+    const varifecToken = uuidv4();
+
     const { body } = req;
     try {
+      // this.sendMail(varifecToken, body.email);
+
       const avatar = Avatar.catBuilder(128); //(генерація аватарки 1з 128)
       avatar.create().then(buffer => fs.writeFile('tmp/avatar.png', buffer)); // записуєм аватар в  tmp
       const newAvatar = Date.now();
       fs.rename('tmp/avatar.png', `public/images/${newAvatar}.png`); // метод переіменування старого файлу tmp/avatar.png на newAvatar і нова його адреса public/images/
       const hashedPassword = await bcrypt.hash(body.password, 14);
 
-      const newAvtarUrl = `http://localhost:${PORT}/images/${newAvatar}.png`;
-      // const newAvtarUrl = `http://localhost:${process.env.PORT || 8080}/images/${newAvatar}.png`;
+      // const newAvtarUrl = `http://localhost:${PORT}/images/${newAvatar}.png`;
+      const newAvtarUrl = `http://localhost:${
+        process.env.PORT || 8080
+      }/images/${newAvatar}.png`;
       // const newAvtarUrl = `http://localhost:8080/images/${newAvatar}.png`; // записую url для кожного юзера
 
       const createUser = await User.create({
         ...body,
         password: hashedPassword,
         token: '',
+        verificationToken: varifecToken,
         avatarURL: newAvtarUrl,
       });
       const { email, subscription } = createUser;
       res.status(201).json({
         user: { email: email, subscription: subscription },
       });
+      next();
     } catch (error) {
-      console.log(error);
+      console.log(error.message);
       res.status(409).send('Email in use');
     }
   }
@@ -124,7 +135,7 @@ class UserController {
     },
     filename: function (req, file, cb) {
       const fileInfo = path.parse(file.originalname); // розпарсили файл назву
-      console.log('fileInfo', fileInfo);
+      // console.log('fileInfo', fileInfo);
       // console.log('file', file);
       cb(null, `FOtos${Date.now()}${fileInfo.ext}`); // формуєм назву файлу "FOtos"+ до назви файлу даєм час по формату 1970р.+розширення файлу
     },
@@ -152,12 +163,12 @@ class UserController {
   async updateUserAvatar(req, res, PORT) {
     console.log('updateUserAvatar started');
 
-    //! const deleteUrl = req.user.avatarURL.replace('http://localhost:8080/images/', '',);
+    // const deleteUrl = req.user.avatarURL.replace('http://localhost:8080/images/', '',);
     const deleteUrl = req.user.avatarURL.replace(
       `http://localhost:${PORT}/images/`,
       '',
     );
-    console.log(req.body);
+    // console.log(req.body);
     switch (true) {
       case !!req.body.password && !!req.file:
         const hashedPassword = await bcrypt.hash(req.body.password, 14);
@@ -218,6 +229,40 @@ class UserController {
         return res.status(200).send('Data updated');
     }
   }
-}
+  async userVerificationToken(req, res) {
+    const {
+      params: { verificationToken },
+    } = req;
 
+    const user = await User.findOne({
+      verificationToken,
+    });
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+    const conectUser = await User.findByIdAndUpdate(user._id, {
+      verificationToken: '',
+    });
+    // console.log(conectUser);
+    return res.status(200).send('successfull');
+  }
+
+  async mailingСheck(req, res) {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    try {
+      // console.log('email', email);
+      // console.log('token', token);
+      const msg = {
+        to: email, // * розсилка йде на цей email
+        from: 'vovafaut@gmail.com', //* розсилка йде з цього email
+        subject: 'Please verify your account',
+        html: `Welcome to our application! To verify your account please go by <a href="http://localhost:${
+          process.env.port || 8080
+        }/auth/verify/${user.verificationToken}">link</a>`,
+      };
+      await sgMail.send(msg);
+    } catch (error) {}
+  }
+}
 module.exports = new UserController();
